@@ -7,7 +7,6 @@ ADD . /root
 RUN cd /root \
 	&& git clone https://github.com/jgwest/github-api-mirror \
 	&& cd github-api-mirror \
-	&& git checkout staging \
 	&& mvn --projects GitHubApiMirrorClient  --also-make install
 
 
