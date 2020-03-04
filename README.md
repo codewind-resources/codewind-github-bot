@@ -44,7 +44,7 @@ Areas:
 - /remove-epic
 
 
-## Change issue status
+### Change issue status
 
 Pipelines:
 - /pipeline `(New Issues/Epics/Backlog/In Progress/Waiting for design/Waiting for backend/Icebox/Verify/Done)`
