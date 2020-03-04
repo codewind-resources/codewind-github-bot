@@ -57,8 +57,7 @@ Pipelines:
 #### Statuses:
 - /reopen
 - /close
-- /verify
-
+- /verify *(Moves the issue into verify state, indicating that it should be verified by the reporter)*
 
 
 ## Detailed Examples 
