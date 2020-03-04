@@ -181,4 +181,18 @@ public class GitHubCredentials {
 
 		ghIssue.close();
 	}
+
+	/**
+	 * Likewise, the EGit close mechanism will cause >1 assignee to be removed, so
+	 * we use non-EGit close.
+	 */
+	public void reopenIssue(String org, String repo, int issueNumber) throws IOException {
+
+		GHOrganization ghOrg = kohGitClient.getOrganization(org);
+		GHRepository ghRepo = ghOrg.getRepository(repo);
+		GHIssue ghIssue = ghRepo.getIssue(issueNumber);
+
+		ghIssue.reopen();
+	}
+
 }
