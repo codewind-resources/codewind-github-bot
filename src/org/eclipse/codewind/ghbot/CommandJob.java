@@ -667,7 +667,13 @@ public class CommandJob {
 			if (allowWrites) {
 				success = Utils.runWithMaxRetries(() -> {
 
-					botCreds.getGhCreds().closeIssue(repo.getOwnerName(), repo.getName(), issueNumber);
+					if (!issueState.issueOpen) {
+						// If the target issue state is closed, then close
+						botCreds.getGhCreds().closeIssue(repo.getOwnerName(), repo.getName(), issueNumber);
+					} else {
+						// Otherwise open.
+						botCreds.getGhCreds().reopenIssue(repo.getOwnerName(), repo.getName(), issueNumber);
+					}
 
 				}, TIME_BETWEEN_RETRIES, MAX_RETRY_FAILURES);
 
