@@ -10,9 +10,9 @@ The command format and primary commands are the same as used as by [Kubernetes P
 - /assign `@user`
 - /unassign `@user`
 
-#### Add/remove area, kind, and priority
+### Add/remove area, kind, and priority
 
-Areas:
+#### Areas:
 - /area `(appsody/iterative-dev/openapi/portal)`
 - /area `(eclipse-ide/intellij-ide/vscode-ide)`
 - /area `(community/design/docs/releng/website)`
