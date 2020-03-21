@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,6 +36,7 @@ import org.eclipse.codewind.ghbot.utils.GitHubRepoEvent;
 import org.eclipse.codewind.ghbot.utils.Logger;
 import org.eclipse.codewind.ghbot.utils.Utils;
 import org.eclipse.codewind.ghbot.utils.Utils.Triplet;
+import org.eclipse.codewind.ghbot.yaml.YamlUserListRoot;
 import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.Issue;
 import org.eclipse.egit.github.core.Label;
@@ -48,6 +50,8 @@ import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
 import org.kohsuke.github.HttpException;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.githubapimirror.client.api.GHIssue;
 import com.githubapimirror.client.api.GHIssueComment;
 import com.githubapimirror.client.api.GHRepository;
@@ -1292,18 +1296,30 @@ public class CommandJob {
 			return false;
 		}
 
-		if (creds.getPathToAuthorizedGitHubLogins() == null) {
+		if (creds.getPathToUserIdList() == null) {
 			// Default to true if no authorized list.
 			return true;
+		} else if (!Files.exists(creds.getPathToUserIdList()) || !Files.isReadable(creds.getPathToUserIdList())) {
+
+			System.err.println("Path to user id list is set, but does not exist or is inaccessible: "
+					+ creds.getPathToUserIdList());
+			return false;
+
 		} else {
 			boolean matchFound;
 			try {
-				matchFound = Arrays
-						.asList(Utils.getTimeCachedFileContents(creds.getPathToAuthorizedGitHubLogins())
-								.split("\\r?\\n"))
-						.stream().map(e -> e.trim()).filter(e -> !e.isEmpty())
-						.filter(e -> !e.startsWith("#") && !e.startsWith("//"))
-						.anyMatch(e -> e.equalsIgnoreCase(login));
+
+				ObjectMapper om = new ObjectMapper(new YAMLFactory());
+
+				YamlUserListRoot root = om.readValue(Utils.getTimeCachedFileContents(creds.getPathToUserIdList()),
+						YamlUserListRoot.class);
+
+				if (root.getUserIDs() == null) {
+					return false;
+				}
+
+				matchFound = root.getUserIDs().stream().map(e -> e.getGithub()).filter(f -> f != null)
+						.anyMatch(g -> g.equalsIgnoreCase(login));
 
 				if (!matchFound) {
 					System.err.println("Rejected user login: " + login);

@@ -13,7 +13,7 @@ package org.eclipse.codewind.ghbot.yaml;
 
 import static org.eclipse.codewind.ghbot.yaml.YamlUtils.assertNonEmptyInYaml;
 
-/** YAML representation of credentials requiring to use ZenHub API. */
+/** YAML representation of credentials required to use ZenHub API. */
 public class YamlZenHubCredentials {
 	String apiKey;
 	String serverUrl;
