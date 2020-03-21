@@ -20,7 +20,7 @@ set -e
 docker run  -d  --name codewind-github-bot-container \
     -v codewind-github-bot-data-volume:/home/default/data \
     -v $1:/home/default/codewind-bot-config.yaml \
-    -v $2:/home/default/authorized-users.txt \
+    -v $2:/home/default/authorized-users.yaml \
     --restart always \
     --cap-drop=all  \
     codewind-github-bot \
