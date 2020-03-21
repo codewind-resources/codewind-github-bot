@@ -29,24 +29,24 @@ public class BotCredentials {
 	private final FeatureFlags featureFlags;
 
 	// Nullable
-	private final Path pathToAuthorizedGitHubLogins;
+	private final Path pathToUserIdList;
 
 	public BotCredentials(GitHubCredentials ghCreds, SlackClient slackClient, MattermostCredentials mattermostCreds,
-			MattermostChannel mattermostChannel, ZenHubClient zenhubClient, Path pathToAuthorizedGitHubLogins,
+			MattermostChannel mattermostChannel, ZenHubClient zenhubClient, Path pathToUserIdList,
 			FeatureFlags featureFlags) {
 		this.ghCreds = ghCreds;
 		this.slackClient = slackClient;
 		this.mattermostCreds = mattermostCreds;
 		this.mattermostChannel = mattermostChannel;
 		this.zenhubClient = zenhubClient;
-		this.pathToAuthorizedGitHubLogins = pathToAuthorizedGitHubLogins;
+		this.pathToUserIdList = pathToUserIdList;
 
 		this.featureFlags = featureFlags;
 
-		if (this.pathToAuthorizedGitHubLogins != null) {
+		if (this.pathToUserIdList != null) {
 
-			if (!Files.exists(pathToAuthorizedGitHubLogins)) {
-				throw new RuntimeException("Could not find login file: " + pathToAuthorizedGitHubLogins);
+			if (!Files.exists(pathToUserIdList)) {
+				throw new RuntimeException("Could not find user id list file: " + pathToUserIdList);
 			}
 
 		}
@@ -72,8 +72,8 @@ public class BotCredentials {
 		return zenhubClient;
 	}
 
-	public Path getPathToAuthorizedGitHubLogins() {
-		return pathToAuthorizedGitHubLogins;
+	public Path getPathToUserIdList() {
+		return pathToUserIdList;
 	}
 
 	public FeatureFlags getFeatureFlags() {
