@@ -36,6 +36,7 @@ import org.eclipse.codewind.ghbot.utils.Logger;
 import com.githubapimirror.client.api.GHIssue;
 import com.githubapimirror.client.api.GHOrganization;
 import com.githubapimirror.client.api.GHRepository;
+import com.githubapimirror.client.api.events.GHIssueEventLabeledUnlabeled;
 
 import net.bis5.mattermost.model.Post;
 import net.bis5.mattermost.model.PostList;
@@ -158,11 +159,13 @@ public class ChannelJobs {
 
 		// Remove issues we have already processed, then sort ascending by creation date
 		List<GitHubRepoEvent> existingProcessedIssues = newIssuesFromProcessRepo.stream()
-				.filter(e -> db.isIssueProcessed(e.getRepository(), e.getGhIssue().getNumber()))
+//				.filter(e -> db.isIssueProcessed(e.getRepository(), e.getGhIssue().getNumber()))
 				.sorted((a, b) -> a.getGhIssue().getCreatedAt().compareTo(b.getGhIssue().getCreatedAt()))
 				.collect(Collectors.toList());
 
 		fileOut("Existing processed issues is: " + existingProcessedIssues.size());
+
+		long threeHoursAgo = System.currentTimeMillis() - TimeUnit.MILLISECONDS.convert(3, TimeUnit.HOURS);
 
 		existingProcessedIssues.forEach(e -> {
 			GHRepository repo = e.getRepository();
@@ -194,6 +197,18 @@ public class ChannelJobs {
 				return;
 			}
 
+			boolean labeledInLastXHours = issue.getIssueEvents().stream()
+					.filter(f -> f instanceof GHIssueEventLabeledUnlabeled).map(f -> (GHIssueEventLabeledUnlabeled) f)
+					.filter(g -> g.isLabeled())
+					// label event must be older than 3 hours
+					.filter(g -> g.getCreatedAt() != null && threeHoursAgo > g.getCreatedAt().getTime())
+					.anyMatch(g -> g.getLabel() != null && g.getLabel().equalsIgnoreCase(newSeverity.getLabelName()));
+
+			if (labeledInLastXHours) {
+				log.out("Ignore issue upgrades that occur within the first X hours " + debugMsg);
+				return;
+			}
+
 			String upgradeType = "";
 
 			if (newSeverity == Severity.HOT) {
@@ -202,15 +217,29 @@ public class ChannelJobs {
 				upgradeType = "Stopship "; // + slOrM(":stop-2:", ":stop_sign:", false);
 			}
 
-			// TODO: Add slack support.
-			String msg = generateMessageFromIssue(repo, issue, issue.getReporter().getLogin(), false);
-
-			msg = slOrM(":arrowgreen:", ":small_red_triangle:", false) + " Upgraded to " + upgradeType + ": " + msg;
-			botCreds.getMattermostChannel().createPost(msg);
-
 			db.setHighestIssueSeveritySeen(repo, issue.getNumber(), newSeverity.getLabelName());
 
-			fileOut("Output to channel: " + msg);
+			if (botCreds.getMattermostChannel() != null) {
+				String msg = generateMessageFromIssue(repo, issue, issue.getReporter().getLogin(), false);
+
+				msg = slOrM(":arrowgreen:", ":small_red_triangle:", false) + " Upgraded to " + upgradeType + ": " + msg;
+				botCreds.getMattermostChannel().createPost(msg);
+
+				fileOut("Output to channel: " + msg);
+
+			}
+
+			if (botCreds.getSlackClient() != null) {
+				String msg = generateMessageFromIssue(repo, issue, issue.getReporter().getLogin(), true);
+
+				msg = slOrM(":arrowgreen:", ":small_red_triangle:", true) + " Upgraded to " + upgradeType + ": " + msg;
+
+				// TODO: Uncomment this once feature is ready.
+				// botCreds.getSlackClient().postToChannel(msg);
+
+				fileOut("Output to channel: " + msg);
+
+			}
 
 		});
 

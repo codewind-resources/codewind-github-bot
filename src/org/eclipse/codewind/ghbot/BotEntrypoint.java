@@ -44,6 +44,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.githubapimirror.client.api.GHOrganization;
 import com.githubapimirror.client.api.GHRepository;
 import com.zhapi.ZenHubClient;
+import com.zhapi.client.ZenHubMirrorApiClient;
 
 /**
  * Entry point for the application. Pass the configuration YAML file as the
@@ -77,6 +78,11 @@ public class BotEntrypoint {
 			zhClient = new ZenHubClient(yr.getZenhub().getServerUrl(), zenhubApiKey);
 		}
 
+		ZenHubMirrorApiClient zhamClient = null;
+		if (featureFlags.isZenHubJob() && yr.getZham() != null) {
+			zhamClient = new ZenHubMirrorApiClient(yr.getZham().getApiUrl(), yr.getZham().getPresharedKey());
+		}
+
 		SlackClient slackClient = new SlackClient(nullIfEmptyOrNullString(yr.getSlackWebhook()), featureFlags);
 
 		MattermostCredentials creds = null;
@@ -107,8 +113,8 @@ public class BotEntrypoint {
 		Path authFilePath = yr.getAuthFile() != null && !yr.getAuthFile().isEmpty()
 				&& !yr.getAuthFile().trim().equalsIgnoreCase("null") ? Paths.get(yr.getAuthFile()) : null;
 
-		BotCredentials botCreds = new BotCredentials(ghCreds, slackClient, creds, mmChannel, zhClient, authFilePath,
-				featureFlags);
+		BotCredentials botCreds = new BotCredentials(ghCreds, slackClient, creds, mmChannel, zhClient, zhamClient,
+				authFilePath, featureFlags);
 
 		List<String> repoStringList = new ArrayList<String>(yr.getRepoList());
 
@@ -211,6 +217,14 @@ public class BotEntrypoint {
 				{
 
 					ChannelJobs.runWaitListJob(db, botCreds);
+
+					if (botCreds.getFeatureFlags().isZenHubJob()) {
+
+						jobUtil.run("zenhub-job", 5 * 60 * 1000, () -> {
+							ZenHubJob.run(repos, botCreds, db);
+						});
+
+					}
 
 					// Run statistics report job every 3 days
 					Calendar c = Calendar.getInstance();

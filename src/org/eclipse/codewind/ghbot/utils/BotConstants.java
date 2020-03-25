@@ -14,8 +14,10 @@ package org.eclipse.codewind.ghbot.utils;
 /** Constants that affect the operation of the bot throughout the codebase. */
 public class BotConstants {
 
-	/** The maximum number of posts to make to Slack/Mattermost every 30 seconds. */
-	public static final int RATE_LIMIT_X_REQUESTS_PER_30_SECONDS = 10;
+	/** The maximum number of posts to make to Slack/Mattermost every hour. */
+	public static final int RATE_LIMIT_X_CHAT_REQUESTS_PER_HOUR = 100;
+
+	public static final int RATE_LIMIT_HOUR_IN_SECONDS = 60 * 60;
 
 	/**
 	 * Set this to true if debugging and don't want to post to the channel. See also

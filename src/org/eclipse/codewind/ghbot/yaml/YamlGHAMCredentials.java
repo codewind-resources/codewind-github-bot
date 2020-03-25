@@ -17,7 +17,7 @@ import static org.eclipse.codewind.ghbot.yaml.YamlUtils.assertNonEmptyInYaml;
  * Server URL and password for a server running GHAM
  * (https://github.com/jgwest/github-api-mirror/)
  */
-public class YamlGHAM {
+public class YamlGHAMCredentials {
 
 	String serverUrl;
 	String psk;

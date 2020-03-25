@@ -27,13 +27,14 @@ public class FeatureFlags {
 	public static final String Issue844Only = "Issue844Only";
 	public static final String DisableExternalWrites = "DisableExternalWrites";
 	public static final String EphemeralDBWrites = "EphemeralDBWrites";
-	public static final String UseTriageAPI = "UseTriageAPI";
+
+	public static final String ZenHubJob = "ZenHubJob";
 
 	private final boolean upgradeDetection;
 	private final boolean issue844Only;
 	private final boolean disableExternalWrites;
 	private final boolean ephemeralDBWrites;
-	private final boolean useTriageAPI;
+	private final boolean zenhubJob;
 
 	public FeatureFlags(List<String> featureFlags) {
 
@@ -45,7 +46,7 @@ public class FeatureFlags {
 		boolean issue844Only = false;
 		boolean disableExternalWrites = false;
 		boolean ephemeralDBWrites = false;
-		boolean useTriageAPI = false;
+		boolean zenhubJob = false;
 
 		for (String flag : featureFlags) {
 
@@ -63,8 +64,8 @@ public class FeatureFlags {
 				disableExternalWrites = true;
 			} else if (flag.equalsIgnoreCase(EphemeralDBWrites)) {
 				ephemeralDBWrites = true;
-			} else if (flag.equalsIgnoreCase(UseTriageAPI)) {
-				useTriageAPI = true;
+			} else if (flag.equalsIgnoreCase(ZenHubJob)) {
+				zenhubJob = true;
 			} else {
 				throw new IllegalArgumentException("Error - unrecognized feature flag: " + flag);
 			}
@@ -75,7 +76,7 @@ public class FeatureFlags {
 		this.upgradeDetection = upgradeDetection;
 		this.disableExternalWrites = disableExternalWrites;
 		this.ephemeralDBWrites = ephemeralDBWrites;
-		this.useTriageAPI = useTriageAPI;
+		this.zenhubJob = zenhubJob;
 	}
 
 	public boolean isUpgradeDetection() {
@@ -94,7 +95,7 @@ public class FeatureFlags {
 		return ephemeralDBWrites;
 	}
 
-	public boolean isUseTriageAPI() {
-		return useTriageAPI;
+	public boolean isZenHubJob() {
+		return zenhubJob;
 	}
 }
