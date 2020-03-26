@@ -5,10 +5,12 @@ set -eo pipefail
 cd /root
 if [ -n "$GHAM_TARGET_REPO" ]; then
     git clone "$GHAM_TARGET_REPO"
+    cd `basename "$GHAM_TARGET_REPO"`
 else
     git clone https://github.com/jgwest/github-api-mirror
+    cd github-api-mirror
 fi
-cd github-api-mirror
+
 if [ -n "$GHAM_TARGET_VERSION" ]; then
     git checkout "$GHAM_TARGET_VERSION"
 fi
@@ -24,10 +26,11 @@ mvn install -DskipTests
 cd /root
 if [ -n "$ZHAM_TARGET_REPO" ]; then
     git clone "$ZHAM_TARGET_REPO"
+    cd `basename "$ZHAM_TARGET_REPO"`
 else
     git clone https://github.com/jgwest/zenhub-api-mirror
+    cd zenhub-api-mirror
 fi
-cd zenhub-api-mirror
 if [ -n "$GHAM_TARGET_VERSION" ]; then
     git checkout "$GHAM_TARGET_VERSION"
 fi
