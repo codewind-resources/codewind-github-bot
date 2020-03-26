@@ -197,14 +197,14 @@ public class ChannelJobs {
 				return;
 			}
 
-			boolean labeledInLastXHours = issue.getIssueEvents().stream()
+			boolean labeledWithinLastXHours = issue.getIssueEvents().stream()
 					.filter(f -> f instanceof GHIssueEventLabeledUnlabeled).map(f -> (GHIssueEventLabeledUnlabeled) f)
 					.filter(g -> g.isLabeled())
-					// label event must be older than 3 hours
-					.filter(g -> g.getCreatedAt() != null && threeHoursAgo > g.getCreatedAt().getTime())
+					// find all events within the last 3 hours
+					.filter(g -> g.getCreatedAt() != null && g.getCreatedAt().getTime() > threeHoursAgo)
 					.anyMatch(g -> g.getLabel() != null && g.getLabel().equalsIgnoreCase(newSeverity.getLabelName()));
 
-			if (labeledInLastXHours) {
+			if (labeledWithinLastXHours) {
 				log.out("Ignore issue upgrades that occur within the first X hours " + debugMsg);
 				return;
 			}
