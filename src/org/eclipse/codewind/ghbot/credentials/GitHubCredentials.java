@@ -52,11 +52,15 @@ public class GitHubCredentials {
 	private final Optional<String> triageRoleUsername;
 	private final Optional<String> triageRolePassword;
 
+	private final FeatureFlags featureFlags;
+
 	private final RateLimiter centralGHRateLimiter = new RateLimiter(GitHubCredentials.class.getSimpleName(),
 			100 /* requests per */, 3600 /* hour */);
 
 	public GitHubCredentials(String ghamUrl, String ghamPsk, String ghUsername, String ghPassword,
-			String triageRoleUsername, String triageRolePassword) throws IOException {
+			String triageRoleUsername, String triageRolePassword, FeatureFlags featureFlags) throws IOException {
+
+		this.featureFlags = featureFlags;
 
 		ghamClient = new com.githubapimirror.client.api.GitHub(new GHConnectInfo(ghamUrl, ghamPsk));
 
@@ -130,6 +134,10 @@ public class GitHubCredentials {
 	public void setAssigneesWithTriage(String org, String repo, int issueNumber, List<String> assigneesToAdd,
 			List<String> assigneesToRemove) throws IOException {
 
+		if (featureFlags.isDisableExternalWrites()) {
+			return;
+		}
+
 		GitHubTriageAPI triageAPI = getTriageAPI();
 
 		if (!assigneesToAdd.isEmpty()) {
@@ -143,6 +151,10 @@ public class GitHubCredentials {
 
 	public void setLabelsWithTriage(String org, String repo, int issueNumber, List<String> labelsToAdd,
 			List<String> labelsToRemove) throws IOException {
+
+		if (featureFlags.isDisableExternalWrites()) {
+			return;
+		}
 
 		GitHubTriageAPI triageAPI = getTriageAPI();
 
@@ -162,6 +174,10 @@ public class GitHubCredentials {
 	 */
 	public void closeIssue(String org, String repo, int issueNumber) throws IOException {
 
+		if (featureFlags.isDisableExternalWrites()) {
+			return;
+		}
+
 		centralGHRateLimiter.signalAction();
 		centralGHRateLimiter.delayIfNeeded();
 
@@ -179,6 +195,10 @@ public class GitHubCredentials {
 	 */
 	public void reopenIssue(String org, String repo, int issueNumber) throws IOException {
 
+		if (featureFlags.isDisableExternalWrites()) {
+			return;
+		}
+
 		centralGHRateLimiter.signalAction();
 		centralGHRateLimiter.delayIfNeeded();
 
@@ -191,6 +211,10 @@ public class GitHubCredentials {
 	}
 
 	public void createComment(Repository repo, int issueNumber, String message) throws IOException {
+
+		if (featureFlags.isDisableExternalWrites()) {
+			return;
+		}
 
 		centralGHRateLimiter.signalAction();
 		centralGHRateLimiter.delayIfNeeded();

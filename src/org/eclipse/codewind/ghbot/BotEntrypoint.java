@@ -108,7 +108,8 @@ public class BotEntrypoint {
 
 		GitHubCredentials ghCreds = new GitHubCredentials(yr.getGham().getServerUrl(), yr.getGham().getPsk(),
 				yr.getGithub() != null ? yr.getGithub().getUsername() : null,
-				yr.getGithub() != null ? yr.getGithub().getPassword() : null, triageUsername, triagePassword);
+				yr.getGithub() != null ? yr.getGithub().getPassword() : null, triageUsername, triagePassword,
+				featureFlags);
 
 		Path authFilePath = yr.getAuthFile() != null && !yr.getAuthFile().isEmpty()
 				&& !yr.getAuthFile().trim().equalsIgnoreCase("null") ? Paths.get(yr.getAuthFile()) : null;

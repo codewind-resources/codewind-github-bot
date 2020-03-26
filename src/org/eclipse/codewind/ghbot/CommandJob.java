@@ -725,6 +725,10 @@ public class CommandJob {
 				if (allowWrites) {
 					success = Utils.runWithMaxRetries(() -> {
 
+						if (botCreds.getFeatureFlags().isDisableExternalWrites()) {
+							return;
+						}
+
 						String pipelineId = bpej.get().getId();
 
 						IssuesService service = new IssuesService(botCreds.getZenhubClient());
@@ -759,7 +763,7 @@ public class CommandJob {
 
 				if (allowWrites) {
 					Optional<CommandReferenceResult> r = addOrRemoveReleaseReport(releaseParam, true, repo, issueNumber,
-							rrs);
+							rrs, botCreds);
 
 					if (r.isPresent()) {
 						return r.get();
@@ -775,7 +779,7 @@ public class CommandJob {
 				if (allowWrites) {
 
 					Optional<CommandReferenceResult> r = addOrRemoveReleaseReport(releaseParam, false, repo,
-							issueNumber, rrs);
+							issueNumber, rrs, botCreds);
 
 					if (r.isPresent()) {
 						return r.get();
@@ -793,7 +797,7 @@ public class CommandJob {
 	}
 
 	private static Optional<CommandReferenceResult> addOrRemoveReleaseReport(String releaseParam, boolean isAdd,
-			GHRepository repo, int issueNumber, ReleaseReportService rrs) {
+			GHRepository repo, int issueNumber, ReleaseReportService rrs, BotCredentials creds) {
 
 		CReference<String> nonExceptionErrorOccurred = new CReference<String>();
 
@@ -817,6 +821,10 @@ public class CommandJob {
 				toAdd = Arrays.asList(new ReleaseReportIssueJson(repo.getRepositoryId(), issueNumber));
 			} else {
 				toRemove = Arrays.asList(new ReleaseReportIssueJson(repo.getRepositoryId(), issueNumber));
+			}
+
+			if (creds.getFeatureFlags().isDisableExternalWrites()) {
+				return;
 			}
 
 			rrs.addOrRemoveIssuesFromReleaseReport(releaseId, toAdd, toRemove);
@@ -1359,7 +1367,6 @@ public class CommandJob {
 
 		if (exception != null) {
 			err("Exception thrown on post error", exception, debugMsg);
-
 		}
 	}
 
