@@ -4,17 +4,12 @@ RUN apt-get -y update && apt-get install -y openjdk-8-jdk maven git && rm -rf /v
 
 ADD . /root
 
-RUN cd /root \
-	&& git clone https://github.com/jgwest/github-api-mirror \
-	&& cd github-api-mirror \
-	&& mvn --projects GitHubApiMirrorClient  --also-make install
+ARG GHAM_TARGET_REPO
+ARG GHAM_TARGET_VERSION
+ARG ZHAM_TARGET_REPO
+ARG ZHAM_TARGET_VERSION
 
-
-RUN cd /root \
-	&& git clone https://github.com/jgwest/zenhub-api-java-client/ \
-	&& cd zenhub-api-java-client \
-	&& mvn install -DskipTests
-
+RUN /root/docker/resources/build_dependencies.sh
 
 RUN cd /root  \
 	&& mvn package -f pom.xml
