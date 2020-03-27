@@ -35,7 +35,7 @@ import com.zhapi.shared.json.RepositoryChangeEventJson;
 
 public class ZenHubJob {
 
-	private static final Logger logger = Logger.getInstance();
+	private static final Logger log = Logger.getInstance();
 
 	private final static long IGNORE_MOVES_OLDER_THAN_X_MSECS = TimeUnit.MILLISECONDS.convert(1, TimeUnit.DAYS);
 
@@ -50,7 +50,7 @@ public class ZenHubJob {
 			long lastEventSeen = db.getLastZhamEventIdSeen().orElse(-1l);
 			long newLastEventSeen = lastEventSeen;
 
-			// Increment by one since the the eventsService query is
+			// Increment by one since the eventsService query is
 			// greater-than-or-equal-to, and we don't want to match a previously returned
 			// event id.
 			lastEventSeen++;
@@ -61,6 +61,8 @@ public class ZenHubJob {
 				if (rcej.getTime() > newLastEventSeen) {
 					newLastEventSeen = rcej.getTime();
 				}
+
+				log.out("Repository update seen: " + rcej.getRepoId() + " " + rcej.getTime());
 			}
 			db.setLastZhamEventIdSeen(newLastEventSeen);
 		}
@@ -83,11 +85,13 @@ public class ZenHubJob {
 			ApiResponse<GetBoardForRepositoryResponseJson> ar = bs.getZenHubBoardForRepo(updatedRepo);
 
 			if (ar.getResponse() == null) {
+				log.err("Did not get a board response for " + updatedRepo);
 				continue;
 			}
 
 			GetBoardForRepositoryResponseJson board = ar.getResponse();
 			if (board.getPipelines() == null) {
+				log.err("Board pipelines were empty for " + updatedRepo);
 				continue;
 			}
 
@@ -111,8 +115,8 @@ public class ZenHubJob {
 			group3.forEach(issue -> db.removeIssueLastSeenInVerifyPipeline(repo, issue));
 
 			// TODO: Convert to info once verify is ready.
-			logger.out("group2: " + group2);
-			logger.out("group3: " + group3);
+			log.out("group2: " + group2);
+			log.out("group3: " + group3);
 
 			if (group2.size() == 0 && group3.size() == 0) {
 				continue;
@@ -122,6 +126,7 @@ public class ZenHubJob {
 
 				ApiResponse<List<IssueEventJson>> air = zhIssuesService.getIssueEvents(updatedRepo, issue);
 				if (air == null || air.getResponse() == null) {
+					log.err("Unaable to get issue events for issue: " + issue);
 					continue;
 				}
 
@@ -129,23 +134,23 @@ public class ZenHubJob {
 						.sorted((a, b) -> b.getCreated_at().compareTo(a.getCreated_at())).findFirst().orElse(null);
 
 				if (lastEvent == null) {
-					logger.err("Couldn't find last event for " + repo.getFullName() + " " + issue);
+					log.err("Couldn't find last event for " + repo.getFullName() + " " + issue);
 					continue;
 				}
 
 				if (lastEvent.getCreated_at() == null
 						|| lastEvent.getCreated_at().getTime() < ignoreMovesOlderThanThis) {
-					logger.err("Last move was older than our threshold for " + repo.getFullName() + " " + issue);
+					log.err("Last move was older than our threshold for " + repo.getFullName() + " " + issue);
 					continue;
 				}
 
 				if (lastEvent.getTo_pipeline() == null || lastEvent.getTo_pipeline().getName() == null) {
-					logger.err("From pipeline was null" + repo.getFullName() + " " + issue);
+					log.err("From pipeline was null" + repo.getFullName() + " " + issue);
 					continue;
 				}
 
 				if (!lastEvent.getTo_pipeline().getName().equalsIgnoreCase("verify")) {
-					logger.out("Issue was not in verify pipeline " + repo.getFullName() + " " + issue);
+					log.out("Issue was not in verify pipeline " + repo.getFullName() + " " + issue);
 					continue;
 				}
 
@@ -178,15 +183,14 @@ public class ZenHubJob {
 							.anyMatch(e -> e.getCreatedAt().getTime() > lastEvent.getCreated_at().getTime());
 
 					if (!haveWeAlreadyPostedTheComment) {
-						logger.out(
-								"!!!! Post message to GitHub: " + repo.getFullName() + " " + issue + " -> " + message);
+						log.out("!!!! Post message to GitHub: " + repo.getFullName() + " " + issue + " -> " + message);
 					} else {
-						logger.out("Skipping post of message to GitHub: " + repo.getFullName() + " " + issue + " -> "
+						log.out("Skipping post of message to GitHub: " + repo.getFullName() + " " + issue + " -> "
 								+ message);
 					}
 
 				} catch (IOException e1) {
-					logger.err("Unable to get and post comment");
+					log.err("Unable to get and post comment");
 					e1.printStackTrace();
 				}
 
