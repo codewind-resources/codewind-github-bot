@@ -62,10 +62,11 @@ public class ZenHubJob {
 					newLastEventSeen = rcej.getTime();
 				}
 
-				log.out("Repository update seen: " + rcej.getRepoId() + " " + rcej.getTime());
+				// log.out("Repository update seen: " + rcej.getRepoId() + " " +
+				// rcej.getTime());
 			}
 			db.setLastZhamEventIdSeen(newLastEventSeen);
-			log.out("Set last ZhamEventId: " + newLastEventSeen);
+			// log.out("Set last ZhamEventId: " + newLastEventSeen);
 		}
 
 		// We don't post verify messages for anything older than X (eg 1) days old.
@@ -127,7 +128,7 @@ public class ZenHubJob {
 
 				ApiResponse<List<IssueEventJson>> air = zhIssuesService.getIssueEvents(updatedRepo, issue);
 				if (air == null || air.getResponse() == null) {
-					log.err("Unaable to get issue events for issue: " + issue);
+					log.err("Unable to get issue events for issue: " + issue);
 					continue;
 				}
 
