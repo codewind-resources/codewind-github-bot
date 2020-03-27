@@ -221,9 +221,10 @@ public class BotEntrypoint {
 
 					if (botCreds.getFeatureFlags().isZenHubJob()) {
 
-						jobUtil.run("zenhub-job", 5 * 60 * 1000, () -> {
+						jobUtil.run("zenhub-job2", 1 * 60 * 1000, () -> {
 							ZenHubJob.run(repos, botCreds, db);
 						});
+						System.out.println("post"); // TODO: Remove this.
 
 					}
 
