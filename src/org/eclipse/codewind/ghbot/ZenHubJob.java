@@ -65,6 +65,7 @@ public class ZenHubJob {
 				log.out("Repository update seen: " + rcej.getRepoId() + " " + rcej.getTime());
 			}
 			db.setLastZhamEventIdSeen(newLastEventSeen);
+			log.out("Set last ZhamEventId: " + newLastEventSeen);
 		}
 
 		// We don't post verify messages for anything older than X (eg 1) days old.
