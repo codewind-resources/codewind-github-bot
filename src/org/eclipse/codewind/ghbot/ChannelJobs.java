@@ -226,9 +226,9 @@ public class ChannelJobs {
 			String upgradeType = "";
 
 			if (newSeverity == Severity.HOT) {
-				upgradeType = "Hot "; // + slOrM(":hd-fire:", ":hot_pepper:", false);
+				upgradeType = "Hot ";
 			} else {
-				upgradeType = "Stopship "; // + slOrM(":stop-2:", ":stop_sign:", false);
+				upgradeType = "Stopship ";
 			}
 
 			db.setHighestIssueSeveritySeen(repo, issue.getNumber(), newSeverity.getLabelName());
@@ -248,8 +248,7 @@ public class ChannelJobs {
 
 				msg = slOrM(":arrowgreen:", ":small_red_triangle:", true) + " Upgraded to " + upgradeType + ": " + msg;
 
-				// TODO: Uncomment this once feature is ready.
-				// botCreds.getSlackClient().postToChannel(msg);
+				botCreds.getSlackClient().postToChannel(msg);
 
 				fileOut("Output to channel: " + msg);
 
