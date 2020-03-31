@@ -45,7 +45,7 @@ public class RateLimiter {
 
 	}
 
-	public void addMessage() {
+	public void signalAction() {
 		synchronized (messagePostTimes_synch) {
 			this.messagePostTimes_synch.add(System.currentTimeMillis());
 		}
@@ -80,7 +80,7 @@ public class RateLimiter {
 			}
 
 			if (count >= maxRequestsInTimePeriod) {
-				System.err.println("Rater limiter '" + name + "' is delaying post: " + count);
+				System.err.println("Rate limiter '" + name + "' is action of " + name + ": " + count);
 				Utils.sleep(1000);
 			}
 

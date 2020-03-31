@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.codewind.ghbot.CommandJob.IssueState;
+import org.eclipse.codewind.ghbot.credentials.FeatureFlags;
 import org.eclipse.codewind.ghbot.credentials.GitHubCredentials;
 import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.service.UserService;
@@ -46,8 +47,10 @@ public class CommandJobTest {
 			// example: "https://(hostname):9443/GitHubApiMirrorService/v1"
 			String url = System.getProperty("ghamurl");
 
+			FeatureFlags empty = new FeatureFlags(Collections.emptyList());
+
 			GitHubCredentials ghCreds = new GitHubCredentials(url, ghamPsk, githubActorUsername, githubActorPassword,
-					null, null);
+					null, null, empty);
 
 			return new UserService(ghCreds.getEgitClient());
 

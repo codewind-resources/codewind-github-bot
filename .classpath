@@ -44,5 +44,8 @@
 	<classpathentry kind="lib" path="lib/jackson-dataformat-yaml-2.9.9.jar"/>
 	<classpathentry kind="lib" path="lib/snakeyaml-1.23.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/zenhub-api-java-client"/>
+	<classpathentry kind="lib" path="lib/zenhub-api-java-client-1.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/ZenHubApiMirrorClient-1.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/ZenHubApiMirrorShared-1.0.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

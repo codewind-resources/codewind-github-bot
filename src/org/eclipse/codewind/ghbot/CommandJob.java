@@ -535,21 +535,14 @@ public class CommandJob {
 
 						try {
 
-							if (botCreds.getFeatureFlags().isUseTriageAPI()) {
+							List<String> assigneesToAdd = new ArrayList<>();
+							List<String> assigneesToRemove = new ArrayList<>();
 
-								List<String> assigneesToAdd = new ArrayList<>();
-								List<String> assigneesToRemove = new ArrayList<>();
+							compareStringLists(issueAssignees, oldIssueAssignees, assigneesToAdd, assigneesToRemove,
+									new ArrayList<>() /* ignore */);
 
-								compareStringLists(issueAssignees, oldIssueAssignees, assigneesToAdd, assigneesToRemove,
-										new ArrayList<>() /* ignore */);
-
-								botCreds.getGhCreds().setAssigneesWithTriage(repo.getOwnerName(), repo.getName(),
-										issueNumber, assigneesToAdd, assigneesToRemove);
-
-							} else {
-								botCreds.getGhCreds().setIssueAssignees(repo.getOwnerName(), repo.getName(),
-										issueNumber, issueAssignees);
-							}
+							botCreds.getGhCreds().setAssigneesWithTriage(repo.getOwnerName(), repo.getName(),
+									issueNumber, assigneesToAdd, assigneesToRemove);
 
 							out("Successfully assigned issue assignees: " + issueAssignees, debugStr);
 
@@ -613,25 +606,14 @@ public class CommandJob {
 				if (allowWrites) {
 					success = Utils.runWithMaxRetries(() -> {
 
-						if (botCreds.getFeatureFlags().isUseTriageAPI()) {
+						List<String> labelsToAdd = new ArrayList<>();
+						List<String> labelsToRemove = new ArrayList<>();
 
-							List<String> labelsToAdd = new ArrayList<>();
-							List<String> labelsToRemove = new ArrayList<>();
+						compareStringLists(newLabelsAsStrings, oldLabelsAsStrings, labelsToAdd, labelsToRemove,
+								new ArrayList<>() /* ignore */);
 
-							compareStringLists(newLabelsAsStrings, oldLabelsAsStrings, labelsToAdd, labelsToRemove,
-									new ArrayList<>() /* ignore */);
-
-							botCreds.getGhCreds().setLabelsWithTriage(repo.getOwnerName(), repo.getName(), issueNumber,
-									labelsToAdd, labelsToRemove);
-
-						} else {
-							Issue latestIssue = issueService.getIssue(repo.getOwnerName(), repo.getName(), issueNumber);
-
-							latestIssue.setLabels(labels);
-
-							issueService.editIssue(repo.getOwnerName(), repo.getName(), latestIssue);
-
-						}
+						botCreds.getGhCreds().setLabelsWithTriage(repo.getOwnerName(), repo.getName(), issueNumber,
+								labelsToAdd, labelsToRemove);
 
 						out("Successfully assigned issue labels: " + labels, debugStr);
 
@@ -743,6 +725,10 @@ public class CommandJob {
 				if (allowWrites) {
 					success = Utils.runWithMaxRetries(() -> {
 
+						if (botCreds.getFeatureFlags().isDisableExternalWrites()) {
+							return;
+						}
+
 						String pipelineId = bpej.get().getId();
 
 						IssuesService service = new IssuesService(botCreds.getZenhubClient());
@@ -777,7 +763,7 @@ public class CommandJob {
 
 				if (allowWrites) {
 					Optional<CommandReferenceResult> r = addOrRemoveReleaseReport(releaseParam, true, repo, issueNumber,
-							rrs);
+							rrs, botCreds);
 
 					if (r.isPresent()) {
 						return r.get();
@@ -793,7 +779,7 @@ public class CommandJob {
 				if (allowWrites) {
 
 					Optional<CommandReferenceResult> r = addOrRemoveReleaseReport(releaseParam, false, repo,
-							issueNumber, rrs);
+							issueNumber, rrs, botCreds);
 
 					if (r.isPresent()) {
 						return r.get();
@@ -811,7 +797,7 @@ public class CommandJob {
 	}
 
 	private static Optional<CommandReferenceResult> addOrRemoveReleaseReport(String releaseParam, boolean isAdd,
-			GHRepository repo, int issueNumber, ReleaseReportService rrs) {
+			GHRepository repo, int issueNumber, ReleaseReportService rrs, BotCredentials creds) {
 
 		CReference<String> nonExceptionErrorOccurred = new CReference<String>();
 
@@ -835,6 +821,10 @@ public class CommandJob {
 				toAdd = Arrays.asList(new ReleaseReportIssueJson(repo.getRepositoryId(), issueNumber));
 			} else {
 				toRemove = Arrays.asList(new ReleaseReportIssueJson(repo.getRepositoryId(), issueNumber));
+			}
+
+			if (creds.getFeatureFlags().isDisableExternalWrites()) {
+				return;
 			}
 
 			rrs.addOrRemoveIssuesFromReleaseReport(releaseId, toAdd, toRemove);
@@ -1362,7 +1352,7 @@ public class CommandJob {
 
 		out("Posting error message to comment: " + msg, debugMsg);
 
-		// TODO: Implement 'Instructions for interacting with me...'
+		// TODO: LOWER - Implement 'Instructions for interacting with me...'
 //		msg += "Instructions for interacting with me using PR comments are available here.";
 
 		String msgFinal = msg;
@@ -1371,15 +1361,12 @@ public class CommandJob {
 			RepositoryService repoService = new RepositoryService(creds.getGhCreds().getTriageEGitClient());
 			Repository repo = repoService.getRepository(ownerName, repoName);
 
-			IssueService is = new IssueService(creds.getGhCreds().getTriageEGitClient());
-
-			is.createComment(repo, issue.getNumber(), msgFinal);
+			creds.getGhCreds().createComment(repo, issue.getNumber(), msgFinal);
 
 		}, TIME_BETWEEN_RETRIES, MAX_RETRY_FAILURES);
 
 		if (exception != null) {
 			err("Exception thrown on post error", exception, debugMsg);
-
 		}
 	}
 

@@ -15,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import com.zhapi.ZenHubClient;
+import com.zhapi.client.ZenHubMirrorApiClient;
 
 /** Immutable list of credentials required by bot functionality. Thread safe. */
 public class BotCredentials {
@@ -26,19 +27,22 @@ public class BotCredentials {
 
 	private final ZenHubClient zenhubClient;
 
+	private final ZenHubMirrorApiClient zhamClient;
+
 	private final FeatureFlags featureFlags;
 
 	// Nullable
 	private final Path pathToUserIdList;
 
 	public BotCredentials(GitHubCredentials ghCreds, SlackClient slackClient, MattermostCredentials mattermostCreds,
-			MattermostChannel mattermostChannel, ZenHubClient zenhubClient, Path pathToUserIdList,
-			FeatureFlags featureFlags) {
+			MattermostChannel mattermostChannel, ZenHubClient zenhubClient, ZenHubMirrorApiClient zhamClient,
+			Path pathToUserIdList, FeatureFlags featureFlags) {
 		this.ghCreds = ghCreds;
 		this.slackClient = slackClient;
 		this.mattermostCreds = mattermostCreds;
 		this.mattermostChannel = mattermostChannel;
 		this.zenhubClient = zenhubClient;
+		this.zhamClient = zhamClient;
 		this.pathToUserIdList = pathToUserIdList;
 
 		this.featureFlags = featureFlags;
@@ -78,5 +82,9 @@ public class BotCredentials {
 
 	public FeatureFlags getFeatureFlags() {
 		return featureFlags;
+	}
+
+	public ZenHubMirrorApiClient getZhamClient() {
+		return zhamClient;
 	}
 }

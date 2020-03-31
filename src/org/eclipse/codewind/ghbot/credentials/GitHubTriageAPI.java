@@ -51,10 +51,14 @@ public class GitHubTriageAPI {
 
 	private final String username, password;
 
-	public GitHubTriageAPI(String username, String password) {
+	private final RateLimiter ghRateLimiter;
+
+	public GitHubTriageAPI(String username, String password, RateLimiter ghRateLimiter) {
 		this.client = generateClient(username, password);
 		this.username = username;
 		this.password = password;
+
+		this.ghRateLimiter = ghRateLimiter;
 
 		log.out("- Using GitHubTriage API credential username: " + username + ", password: [... " + password.length()
 				+ " characters ...]");
@@ -62,6 +66,10 @@ public class GitHubTriageAPI {
 	}
 
 	public void addAssignees(String orgOrUser, String repo, int issue, List<String> assignees) throws IOException {
+
+		ghRateLimiter.signalAction();
+		ghRateLimiter.delayIfNeeded();
+
 		Map<String, List<String>> jsonBody = new HashMap<>();
 		jsonBody.put("assignees", assignees);
 
@@ -83,6 +91,10 @@ public class GitHubTriageAPI {
 	}
 
 	public void removeAssignees(String orgOrUser, String repo, int issue, List<String> assignees) throws IOException {
+
+		ghRateLimiter.signalAction();
+		ghRateLimiter.delayIfNeeded();
+
 		Map<String, List<String>> jsonBody = new HashMap<>();
 		jsonBody.put("assignees", assignees);
 
@@ -104,6 +116,9 @@ public class GitHubTriageAPI {
 	}
 
 	public void removeLabels(String orgOrUser, String repo, int issue, List<String> labels) throws IOException {
+
+		ghRateLimiter.signalAction();
+		ghRateLimiter.delayIfNeeded();
 
 		labels.forEach(label -> {
 			Request req = new Request.Builder().url(
@@ -129,6 +144,9 @@ public class GitHubTriageAPI {
 
 	public void addLabels(String orgOrUser, String repo, int issue, List<String> labels) throws IOException {
 
+		ghRateLimiter.signalAction();
+		ghRateLimiter.delayIfNeeded();
+
 		Map<String, List<String>> jsonBody = new HashMap<>();
 		jsonBody.put("labels", labels);
 
@@ -153,6 +171,7 @@ public class GitHubTriageAPI {
 	private void outputResponse(Response r) {
 		ResponseBody body = r.body();
 
+		// TODO: Comment this out or switch it to debug.
 		log.out("");
 		log.out("Message: " + r.message());
 		try {

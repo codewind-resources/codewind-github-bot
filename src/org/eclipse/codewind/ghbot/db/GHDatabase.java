@@ -39,6 +39,8 @@ public class GHDatabase {
 
 	private static final String KEY_TIME_WHEN_STATS_REPORT_JOB_LAST_RUN = "statisticsReportJobLastRun";
 
+	private static final String KEY_LAST_ZHAM_EVENT_ID_SEEN = "lastZhamEventIdSeen";
+
 	private final static long ONE_DAY = TimeUnit.MILLISECONDS.convert(1, TimeUnit.DAYS);
 
 	private final IKVStore db;
@@ -179,6 +181,49 @@ public class GHDatabase {
 
 	public void setLastStatisticsReportJobRun(long timeInMsecs) {
 		db.persistString(KEY_TIME_WHEN_STATS_REPORT_JOB_LAST_RUN, Long.toString(timeInMsecs));
+	}
+
+	public void setLastZhamEventIdSeen(long eventId) {
+		db.persistString(KEY_LAST_ZHAM_EVENT_ID_SEEN, Long.toString(eventId));
+	}
+
+	public Optional<Long> getLastZhamEventIdSeen() {
+		Optional<String> o = db.getString(KEY_LAST_ZHAM_EVENT_ID_SEEN);
+		if (o.isPresent()) {
+			return Optional.of(Long.parseLong(o.get()));
+		} else {
+			return Optional.empty();
+		}
+	}
+
+	public void addIssueLastSeenInVerifyPipeline(GHRepository repo, int issueNumber) {
+
+		// TODO: Remove this once verify is ready
+		System.out.println("addIssueLastSeenInVerifyPipeline " + repo.getFullName() + " " + issueNumber);
+
+		String key = "verify-pipeline-" + repo.getName() + "_" + issueNumber;
+		db.persistString(key, "");
+	}
+
+	public void removeIssueLastSeenInVerifyPipeline(GHRepository repo, int issueNumber) {
+
+		// TODO: Remove this one verify is ready
+		System.out.println("removeIssueLastSeenInVerifyPipeline " + repo.getFullName() + " " + issueNumber);
+
+		String key = "verify-pipeline-" + repo.getName() + "_" + issueNumber;
+		db.removeByKey(key);
+	}
+
+	public List<Integer> getIssuesInVerifyPipeline(GHRepository repo) {
+
+		return db.getKeysByPrefix("verify-pipeline-" + repo.getName() + "_").stream().map(e -> {
+
+			int index = e.lastIndexOf("_");
+			int issueNumber = Integer.parseInt(e.substring(index + 1));
+			return issueNumber;
+
+		}).collect(Collectors.toList());
+
 	}
 
 	public void cleanOldEntriesIfApplicable() {

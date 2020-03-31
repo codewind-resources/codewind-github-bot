@@ -33,7 +33,7 @@ public class SlackClient {
 	private final Optional<String> webhookUrl;
 
 	private final RateLimiter rateLimiter = new RateLimiter(SlackClient.class.getSimpleName(),
-			BotConstants.RATE_LIMIT_X_REQUESTS_PER_30_SECONDS, 30);
+			BotConstants.RATE_LIMIT_X_CHAT_REQUESTS_PER_HOUR, BotConstants.RATE_LIMIT_HOUR_IN_SECONDS);
 
 	private final FeatureFlags featureFlags;
 
@@ -48,7 +48,7 @@ public class SlackClient {
 		}
 
 		if (!BotConstants.DISABLE_POST_TO_CHANNEL && !featureFlags.isDisableExternalWrites()) {
-			rateLimiter.addMessage();
+			rateLimiter.signalAction();
 			rateLimiter.delayIfNeeded();
 
 			Payload payload = Payload.builder().text(msg).build();

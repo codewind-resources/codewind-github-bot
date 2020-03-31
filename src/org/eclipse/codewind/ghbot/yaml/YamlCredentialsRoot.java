@@ -24,7 +24,9 @@ public class YamlCredentialsRoot {
 	YamlMattermostCredentials mattermost;
 
 	YamlZenHubCredentials zenhub;
-	YamlGHAM gham;
+	YamlGHAMCredentials gham;
+
+	YamlZHAMCredentials zham;
 
 	String databasePath;
 
@@ -59,6 +61,8 @@ public class YamlCredentialsRoot {
 		} else {
 			gham.validate();
 		}
+
+		// TODO: Validate ZHAM
 
 	}
 
@@ -110,12 +114,20 @@ public class YamlCredentialsRoot {
 		this.authFile = authFile;
 	}
 
-	public YamlGHAM getGham() {
+	public YamlGHAMCredentials getGham() {
 		return gham;
 	}
 
-	public void setGham(YamlGHAM gham) {
+	public void setGham(YamlGHAMCredentials gham) {
 		this.gham = gham;
+	}
+
+	public YamlZHAMCredentials getZham() {
+		return zham;
+	}
+
+	public void setZham(YamlZHAMCredentials zham) {
+		this.zham = zham;
 	}
 
 	public List<String> getRepoList() {
