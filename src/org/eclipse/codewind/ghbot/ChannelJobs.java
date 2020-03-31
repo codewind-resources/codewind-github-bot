@@ -165,6 +165,8 @@ public class ChannelJobs {
 
 		fileOut("Existing processed issues is: " + existingProcessedIssues.size());
 
+		long oneDayAgo = System.currentTimeMillis() - TimeUnit.MILLISECONDS.convert(1, TimeUnit.DAYS);
+
 		long threeHoursAgo = System.currentTimeMillis() - TimeUnit.MILLISECONDS.convert(3, TimeUnit.HOURS);
 
 		existingProcessedIssues.forEach(e -> {
@@ -206,6 +208,18 @@ public class ChannelJobs {
 
 			if (labeledWithinLastXHours) {
 				log.out("Ignore issue upgrades that occur within the first X hours " + debugMsg);
+				return;
+			}
+
+			boolean newerThan24Hours = issue.getIssueEvents().stream()
+					.filter(f -> f instanceof GHIssueEventLabeledUnlabeled).map(f -> (GHIssueEventLabeledUnlabeled) f)
+					.filter(g -> g.isLabeled())
+					// find all events within the last day
+					.filter(g -> g.getCreatedAt() != null && g.getCreatedAt().getTime() > oneDayAgo)
+					.anyMatch(g -> g.getLabel() != null && g.getLabel().equalsIgnoreCase(newSeverity.getLabelName()));
+
+			if (!newerThan24Hours) {
+				log.out("Ignore issue upgrades older than 24 hours.");
 				return;
 			}
 
