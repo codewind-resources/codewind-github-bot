@@ -158,6 +158,11 @@ public class ZenHubJob {
 					continue;
 				}
 
+				if (credentials.getFeatureFlags().isIssue844Only() && issue != 844) {
+					log.out("Issue 844 only feature flag is enabled, so skipping ZH job.");
+					continue;
+				}
+
 				GHIssue ghIssue = repo.getIssue(issue);
 
 				String message = "@" + ghIssue.getReporter().getLogin() + " - this issue is now ready to be verified.";

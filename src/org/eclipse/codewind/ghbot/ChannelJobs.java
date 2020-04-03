@@ -333,7 +333,7 @@ public class ChannelJobs {
 
 	static List<MMIssueStatusEntry> getAllIssuePostsOnChannel(BotCredentials creds) {
 
-		if (creds.getMattermostCreds() == null) {
+		if (creds.getMattermostCreds() == null || creds.getMattermostChannel() == null) {
 			return Collections.emptyList();
 		}
 
