@@ -21,7 +21,9 @@ import java.util.stream.Collectors;
 import org.eclipse.codewind.ghbot.credentials.BotCredentials;
 import org.eclipse.codewind.ghbot.db.GHDatabase;
 import org.eclipse.codewind.ghbot.utils.Logger;
+import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.service.IssueService;
+import org.eclipse.egit.github.core.service.RepositoryService;
 
 import com.githubapimirror.client.api.GHIssue;
 import com.githubapimirror.client.api.GHRepository;
@@ -185,10 +187,27 @@ public class ZenHubJob {
 							.anyMatch(e -> e.getCreatedAt().getTime() > lastEvent.getCreated_at().getTime());
 
 					if (!haveWeAlreadyPostedTheComment) {
-						log.out("!!!! Post message to GitHub: " + repo.getFullName() + " " + issue + " -> " + message);
+						if (!credentials.getFeatureFlags().isDisableExternalWrites()) {
+
+							RepositoryService repoService = new RepositoryService(
+									credentials.getGhCreds().getTriageEGitClient());
+
+							Repository eRepo = repoService.getRepository(repo.getOwnerName(), repo.getName());
+
+							credentials.getGhCreds().createComment(eRepo, issue.intValue(), message);
+
+							log.out("!!!! Posted message to GitHub: " + repo.getFullName() + " " + issue + " -> "
+									+ message);
+
+						} else {
+							log.out("!!!! Writes disabled, so skipping post message to GitHub: " + repo.getFullName()
+									+ " " + issue + " -> " + message);
+
+						}
+
 					} else {
-						log.out("Skipping post of message to GitHub: " + repo.getFullName() + " " + issue + " -> "
-								+ message);
+						log.out("Skipping post of message to GitHub, as we already posted it: " + repo.getFullName()
+								+ " " + issue + " -> " + message);
 					}
 
 				} catch (IOException e1) {
