@@ -167,8 +167,6 @@ public class ChannelJobs {
 
 		long oneDayAgo = System.currentTimeMillis() - TimeUnit.MILLISECONDS.convert(1, TimeUnit.DAYS);
 
-		long threeHoursAgo = System.currentTimeMillis() - TimeUnit.MILLISECONDS.convert(3, TimeUnit.HOURS);
-
 		existingProcessedIssues.forEach(e -> {
 			GHRepository repo = e.getRepository();
 			String repoName = repo.getName();
@@ -178,6 +176,13 @@ public class ChannelJobs {
 			if (issue.isClosed()) {
 				return;
 			}
+
+			if (issue.getCreatedAt() == null) {
+				return;
+			}
+
+			long threeHoursAfterCreation = issue.getCreatedAt().getTime()
+					+ TimeUnit.MILLISECONDS.convert(3, TimeUnit.HOURS);
 
 			Severity previousSeverity = Severity
 					.fromStringOptional(db.getHighestIssueSeveritySeen(repo, issue.getNumber()).orElse(null))
@@ -199,14 +204,16 @@ public class ChannelJobs {
 				return;
 			}
 
-			boolean labeledWithinLastXHours = issue.getIssueEvents().stream()
+			db.setHighestIssueSeveritySeen(repo, issue.getNumber(), newSeverity.getLabelName());
+
+			boolean labeledWithinFirstXHours = issue.getIssueEvents().stream()
 					.filter(f -> f instanceof GHIssueEventLabeledUnlabeled).map(f -> (GHIssueEventLabeledUnlabeled) f)
 					.filter(g -> g.isLabeled())
-					// find all events within the last 3 hours
-					.filter(g -> g.getCreatedAt() != null && g.getCreatedAt().getTime() > threeHoursAgo)
+					// find all events within the first 3 hours
+					.filter(g -> g.getCreatedAt() != null && g.getCreatedAt().getTime() < threeHoursAfterCreation)
 					.anyMatch(g -> g.getLabel() != null && g.getLabel().equalsIgnoreCase(newSeverity.getLabelName()));
 
-			if (labeledWithinLastXHours) {
+			if (labeledWithinFirstXHours) {
 				log.out("Ignore issue upgrades that occur within the first X hours " + debugMsg);
 				return;
 			}
@@ -230,8 +237,6 @@ public class ChannelJobs {
 			} else {
 				upgradeType = "Stopship ";
 			}
-
-			db.setHighestIssueSeveritySeen(repo, issue.getNumber(), newSeverity.getLabelName());
 
 			if (botCreds.getMattermostChannel() != null) {
 				String msg = generateMessageFromIssue(repo, issue, issue.getReporter().getLogin(), false);
