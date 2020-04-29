@@ -6,6 +6,9 @@ The command format and primary commands are the same as used as by [Kubernetes P
 
 ## Bot Command Quick Reference
 
+**NOTE**: In order to issue commands, you must be [on the authorized users list](https://github.com/codewind-resources/infrastructure/blob/master/codewind-github-bot/Authorized-Users-Codewind-Bot.yaml). Feel free to request addition on the [Eclipse Mattermost channel](https://github.com/eclipse/codewind#feedback-and-community), or open a PR against the user list.
+
+
 #### Assign an issue
 - /assign `@user`
 - /unassign `@user`

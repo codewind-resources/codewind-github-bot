@@ -93,8 +93,12 @@ public class BotEntrypoint {
 
 			if (mattermostUsername != null && mattermostPassword != null) {
 				creds = new MattermostCredentials(yr.getMattermost().getMattermostServer(), mattermostUsername,
-						mattermostPassword);
-				mmChannel = new MattermostChannel(creds, yr.getMattermost().getOutputChannel(), featureFlags);
+						mattermostPassword, featureFlags);
+
+				if (nullIfEmptyOrNullString(yr.getMattermost().getOutputChannel()) != null) {
+					mmChannel = new MattermostChannel(creds, yr.getMattermost().getOutputChannel(), featureFlags);
+				}
+
 			}
 
 		}

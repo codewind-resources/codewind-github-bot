@@ -37,9 +37,6 @@ public class MattermostChannel {
 
 	private final FeatureFlags featureFlags;
 
-	private final RateLimiter rateLimiter = new RateLimiter(MattermostChannel.class.getSimpleName(),
-			BotConstants.RATE_LIMIT_X_CHAT_REQUESTS_PER_HOUR, BotConstants.RATE_LIMIT_HOUR_IN_SECONDS);
-
 	public MattermostChannel(MattermostCredentials credentials, String channelName, FeatureFlags featureFlags) {
 
 		this.channelName = channelName;
@@ -68,8 +65,9 @@ public class MattermostChannel {
 
 	public void createPost(String msg) {
 		if (!BotConstants.DISABLE_POST_TO_CHANNEL && !this.featureFlags.isDisableExternalWrites()) {
-			rateLimiter.signalAction();
-			rateLimiter.delayIfNeeded();
+
+			credentials.getCentralRateLimiter().signalAction();
+			credentials.getCentralRateLimiter().delayIfNeeded();
 			credentials.getClient().createPost(new Post(channel.getId(), msg));
 		} else {
 			System.err.println("Skipping 'createPost' for" + msg);

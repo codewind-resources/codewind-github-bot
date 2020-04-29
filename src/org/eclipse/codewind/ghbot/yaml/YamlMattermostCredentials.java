@@ -57,7 +57,6 @@ public class YamlMattermostCredentials {
 
 	public void validate() {
 		assertNonEmptyInYaml("mattermostServer", mattermostServer);
-		assertNonEmptyInYaml("outputChannel", outputChannel);
 		assertNonEmptyInYaml("username", username);
 		assertNonEmptyInYaml("password", password);
 	}
