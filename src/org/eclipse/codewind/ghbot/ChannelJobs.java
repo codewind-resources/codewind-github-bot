@@ -306,9 +306,14 @@ public class ChannelJobs {
 
 			log.out(debugMsg);
 
-			String mmResult = generateMessageFromIssue(repo, issue, issue.getReporter().getLogin(), false);
-
 			db.addIssueToProcessed(repo, issue.getNumber());
+
+			if (issue.getReporter() == null || issue.getReporter().getLogin() == null) {
+				log.out("Skipping issue with empty reporter or reporter login: " + repoName + "/" + issue.getNumber());
+				return;
+			}
+
+			String mmResult = generateMessageFromIssue(repo, issue, issue.getReporter().getLogin(), false);
 
 			// Ignore issues created before the database was initialized.
 			if (issue.getCreatedAt().getTime() < databaseInitDate || databaseInitDate == 0) {
